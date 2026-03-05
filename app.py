@@ -100,54 +100,62 @@ summary_flat = summary_flat.reset_index()
 
 # Functions for plots
 def make_combined_heatmap(df: pd.DataFrame, agg: str) -> go.Figure:
-    if agg == "median":
-        grouped_data = combined_data.groupby(['Year', 'Quarter'])[columns_for_boxplot].median().unstack()
-        title_text = 'Median Daily Returns by Year and Quarter'
-    else:
-        grouped_data = combined_data.groupby(['Year', 'Quarter'])[columns_for_boxplot].mean().unstack()
-        title_text = 'Mean Daily Returns by Year and Quarter'
-    
-    z_data = grouped_data.values
-    column_labels = []
-    for col in grouped_data.columns:
-        if isinstance(col, tuple) and len(col) == 2:
-            index_name = col[0].replace('_Return', '')
-            quarter = col[1]  
-            column_labels.append(f"{index_name}_{quarter}")
+    try:
+        if df.empty or 'Year' not in df.columns or 'Quarter' not in df.columns:
+            st.error("Data is missing required columns (Year, Quarter)")
+            return go.Figure()
+        
+        if agg == "median":
+            grouped_data = df.groupby(['Year', 'Quarter'])[columns_for_boxplot].median().unstack()
+            title_text = 'Median Daily Returns by Year and Quarter'
         else:
-            column_labels.append(str(col))
-    
-    year_labels = [str(year) for year in grouped_data.index]
-    
-    text = np.where(np.isfinite(z_data), np.round(z_data, 2).astype(str), "")
-    
-    fig = go.Figure(
-        data=go.Heatmap(
-            z=z_data,
-            x=column_labels,
-            y=year_labels,
-            colorscale="RdYlBu_r",
-            zmid=0,
-            text=text,
-            texttemplate="%{text}",
-            hovertemplate="Year=%{y}<br>Index_Quarter=%{x}<br>Return=%{z:.4f}<extra></extra>",
-            colorbar=dict(title="Return"),
-            showscale=True
+            grouped_data = df.groupby(['Year', 'Quarter'])[columns_for_boxplot].mean().unstack()
+            title_text = 'Mean Daily Returns by Year and Quarter'
+        
+        z_data = grouped_data.values
+        column_labels = []
+        for col in grouped_data.columns:
+            if isinstance(col, tuple) and len(col) == 2:
+                index_name = col[0].replace('_Return', '')
+                quarter = col[1]  
+                column_labels.append(f"{index_name}_{quarter}")
+            else:
+                column_labels.append(str(col))
+        
+        year_labels = [str(year) for year in grouped_data.index]
+        
+        text = np.where(np.isfinite(z_data), np.round(z_data, 2).astype(str), "")
+        
+        fig = go.Figure(
+            data=go.Heatmap(
+                z=z_data,
+                x=column_labels,
+                y=year_labels,
+                colorscale="RdYlBu_r",
+                zmid=0,
+                text=text,
+                texttemplate="%{text}",
+                hovertemplate="Year=%{y}<br>Index_Quarter=%{x}<br>Return=%{z:.4f}<extra></extra>",
+                colorbar=dict(title="Return"),
+                showscale=True
+            )
         )
-    )
-    
-    fig.update_layout(
-        title=title_text,
-        xaxis_title="Index",
-        yaxis_title="Year",
-        margin=dict(l=80, r=50, t=80, b=80),
-        height=600,
-        width=1200,
-        xaxis=dict(tickangle=45, side="bottom"),
-        yaxis=dict(title="Year")
-    )
-    
-    return fig
+        
+        fig.update_layout(
+            title=title_text,
+            xaxis_title="Index",
+            yaxis_title="Year",
+            margin=dict(l=80, r=50, t=80, b=80),
+            height=600,
+            width=1200,
+            xaxis=dict(tickangle=45, side="bottom"),
+            yaxis=dict(title="Year")
+        )
+        
+        return fig
+    except Exception as e:
+        st.error(f"Error creating heatmap: {str(e)}")
+        return go.Figure()
 
 def corr_fig(corr_df, title):
     z = corr_df.to_numpy()
