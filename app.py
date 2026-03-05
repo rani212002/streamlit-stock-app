@@ -88,7 +88,7 @@ corr_B = combined_data_2024[returns_cols].corr()
 summary = combined_data.groupby('Nifty_Open_Dir')[global_indices].agg(['mean', 'median', 'std'])
 bar_long = (
     summary.loc[:, (slice(None), ['mean', 'median'])]
-    .stack(0)
+    .stack(level=0)
     .reset_index()
     .rename(columns={"level_1": "Index"})
     .melt(id_vars=["Nifty_Open_Dir", "Index"], value_vars=["mean", "median"],
