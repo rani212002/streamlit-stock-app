@@ -1,0 +1,11 @@
+streamlit
+pandas
+numpy
+plotly
+scikit-learn
+matplotlib
+wordcloud
+nltk
+transformers
+torch
+yfinance
