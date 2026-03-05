@@ -15,9 +15,6 @@ import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
-import dash.dash_table as dt  # Wait, this is Dash, for Streamlit, use st.dataframe
-
-# Note: dash_table is for Dash, for Streamlit use st.dataframe
 
 # Download data
 @st.cache_data
